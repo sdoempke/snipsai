@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28917.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SDO.SnipsAI.Client", "Source\SDO.SnipsAI.Client\SDO.SnipsAI.Client.csproj", "{37F5149B-0354-414C-8A78-F0ACC72D6E5B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SDO.SnipsAI.Client.Test", "Tests\SDO.SnipsAI.Client.Test\SDO.SnipsAI.Client.Test.csproj", "{04D965C3-F870-40E4-8B95-964AB90BF726}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{37F5149B-0354-414C-8A78-F0ACC72D6E5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37F5149B-0354-414C-8A78-F0ACC72D6E5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37F5149B-0354-414C-8A78-F0ACC72D6E5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37F5149B-0354-414C-8A78-F0ACC72D6E5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04D965C3-F870-40E4-8B95-964AB90BF726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04D965C3-F870-40E4-8B95-964AB90BF726}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04D965C3-F870-40E4-8B95-964AB90BF726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04D965C3-F870-40E4-8B95-964AB90BF726}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E7C74FD0-D0FB-4500-9867-8140F57A3F83}
+	EndGlobalSection
+EndGlobal

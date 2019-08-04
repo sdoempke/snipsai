@@ -1,4 +1,4 @@
-# SDO.SnipsAI.Client
+﻿# SDO.SnipsAI.Client
 
 SDO.SnipsAI.Client is a client library for [snips.ai](http://snips.ai).
 It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrastructure.
