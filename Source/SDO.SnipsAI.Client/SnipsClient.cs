@@ -239,21 +239,23 @@ namespace SDO.SnipsAI.Client
                     var parsedIntend = Newtonsoft.Json.JsonConvert.DeserializeObject<IntentMessage>(payLoadString);
 
                     Session existingSession = null;
-                    _sessionMap.TryGetValue(parsedIntend.SessionId, out existingSession);
-                    existingSession.IntentMessages.Add(parsedIntend);
-
-                    if (existingSession.Dialog != null)
+                    if (_sessionMap.TryGetValue(parsedIntend.SessionId, out existingSession))
                     {
-                        await existingSession.Dialog.OnIntentAsync(parsedIntend, existingSession);
-                    }
-                    else
-                    {
-                        IDialog foundDialog = null;
+                        existingSession.IntentMessages.Add(parsedIntend);
 
-                        if (_dialogMap.TryGetValue(parsedIntend.Intent.Name, out foundDialog))
+                        if (existingSession.Dialog != null)
                         {
-                            existingSession.SetDialog(foundDialog);
-                            await foundDialog.OnIntentAsync(parsedIntend, existingSession);
+                            await existingSession.Dialog.OnIntentAsync(parsedIntend, existingSession);
+                        }
+                        else
+                        {
+                            IDialog foundDialog = null;
+
+                            if (_dialogMap.TryGetValue(parsedIntend.Intent.Name, out foundDialog))
+                            {
+                                existingSession.SetDialog(foundDialog);
+                                await foundDialog.OnIntentAsync(parsedIntend, existingSession);
+                            }
                         }
                     }
                 }
@@ -517,14 +519,14 @@ namespace SDO.SnipsAI.Client
                 return false;
             }
 
-            if(endPart != null && !reportedQueueName.EndsWith(endPart))
+            if(!string.IsNullOrEmpty(endPart) && !reportedQueueName.EndsWith(endPart))
             {
                 return false;
             }
 
             wildCardContent = reportedQueueName.Substring(indexOfWildCard);
 
-            if(endPart != null)
+            if(!string.IsNullOrEmpty(endPart))
             {
                 wildCardContent = wildCardContent.Replace(endPart, "");
             }
