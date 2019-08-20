@@ -5,13 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="JsonSubTypes" Version="1.6.0" />
+    <PackageReference Include="MQTTnet" Version="3.0.8" />
+    <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="3.0.8" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Hermes\Dialog\" />
-    <Folder Include="Hermes\Nlu\" />
   </ItemGroup>
 
   <ItemGroup>

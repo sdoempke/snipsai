@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace SDO.SnipsAI.Client
 {
     /// <summary>
-    /// Class for a session in snips
+    /// Class representing a session in snips
     /// </summary>
     public class Session
     {
@@ -47,7 +47,7 @@ namespace SDO.SnipsAI.Client
         }
 
         /// <summary>
-        /// 
+        /// Called when the session has ended
         /// </summary>
         /// <param name="termination">Termination reson</param>
         internal void OnEnded(SessionTermination termination)
@@ -55,6 +55,10 @@ namespace SDO.SnipsAI.Client
             
         }
 
+        /// <summary>
+        /// Set the dialog for this session
+        /// </summary>
+        /// <param name="dialog"></param>
         internal void SetDialog(IDialog dialog)
         {
             Dialog = dialog;

@@ -6,10 +6,14 @@ using System.Threading.Tasks;
 
 namespace SDO.SnipsAI.Client
 {
+    /// <summary>
+    /// Interface for a dialog in snips
+    /// It is implemented by classes handling a dialog started with a specific intent
+    /// </summary>
     public interface IDialog
     {
         /// <summary>
-        /// What the name of the initial intent the is handled?
+        /// What is the name of the initial intent that is handled with this dialog?
         /// </summary>
         string InitialIntendName { get; }
 

@@ -5,7 +5,6 @@ using SDO.SnipsAI.Client.Hermes.Feedback;
 using SDO.SnipsAI.Client.Hermes.Nlu;
 using SDO.SnipsAI.Client.Hermes.Tts;
 using SDO.SnipsAI.Client.Hermes.Wakeword;
-using System.Threading.Tasks;
 
 namespace SDO.SnipsAI.Client
 {
@@ -14,6 +13,5 @@ namespace SDO.SnipsAI.Client
     /// </summary>
     public interface ISnipsApi : IDialogApi, ITtsApi, INluApi, IAudioServerApi, IFeedbackApi, IWakewordApi, IAsrApi
     {
-        Task ConfirmActionAsync(IntentMessage message);
     }
 }

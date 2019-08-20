@@ -69,11 +69,6 @@ namespace SDO.SnipsAI.Client
         private Random _random = new Random();
 
         /// <summary>
-        /// default message languae
-        /// </summary>
-        private string _defaultLanguage = "de";
-
-        /// <summary>
         /// Factory for MQTT clients
         /// </summary>
         private MQTTnet.MqttFactory _factory;
@@ -93,7 +88,6 @@ namespace SDO.SnipsAI.Client
         /// </summary>
         private readonly ConcurrentDictionary<string, Session> _sessionMap = new ConcurrentDictionary<string, Session>();
 
-        
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -111,7 +105,7 @@ namespace SDO.SnipsAI.Client
             {
                 ClientOptions = new MqttClientOptions
                 {
-                    ClientId = "MiddlewareAssistent",
+                    ClientId = "SDO.SnipsAi.Client",
                     ChannelOptions = new MqttClientTcpOptions
                     {
                         Server = url
@@ -126,7 +120,6 @@ namespace SDO.SnipsAI.Client
 
         public async Task Connect(ManagedMqttClientOptions clientOptions)
         {
-
             var client = _factory.CreateManagedMqttClient();
             _client = client;
 
@@ -153,7 +146,10 @@ namespace SDO.SnipsAI.Client
             Console.WriteLine("### CONNECTED WITH SERVER ###");
 
             await _client.SubscribeAsync(DialogIntentMessageQueueName);
-            await _client.SubscribeAsync(AudioFrameMessageQueueName);
+            if (OnFrameReceivedHandler != null)
+            {
+                await _client.SubscribeAsync(AudioFrameMessageQueueName);
+            }
             await _client.SubscribeAsync(DialogSessionStartedMessageQueueName);
             await _client.SubscribeAsync(DialogSessionQueuedMessageQueueName);
             await _client.SubscribeAsync(DialogSessionEndedMessageQueueName);
@@ -252,19 +248,12 @@ namespace SDO.SnipsAI.Client
                     }
                     else
                     {
-                        if (parsedIntend.Intent.Score > 0.5)
+                        IDialog foundDialog = null;
+
+                        if (_dialogMap.TryGetValue(parsedIntend.Intent.Name, out foundDialog))
                         {
-                            IDialog foundDialog = null;
-                      
-                            if (_dialogMap.TryGetValue(parsedIntend.Intent.Name, out foundDialog))
-                            {
-                                existingSession.SetDialog(foundDialog);
-                                await foundDialog.OnIntentAsync(parsedIntend, existingSession);
-                            }
-                        }
-                        else
-                        {
-                            await ContinueSessionAsync(sessionId: parsedIntend.SessionId, "Ich konnte leider nicht genau verstehen was Du gesagt hast. Kannst du es bitte wiederholen?");
+                            existingSession.SetDialog(foundDialog);
+                            await foundDialog.OnIntentAsync(parsedIntend, existingSession);
                         }
                     }
                 }
@@ -290,31 +279,17 @@ namespace SDO.SnipsAI.Client
             }
         }
 
-        #region ITTSApi
+        #region ITtsApi
 
+
+        /// <inheritdoc/>
         public ITtsOnSayFinishedHandler OnSayFinishedHandler { get; set; }
 
+        /// <inheritdoc/>
         public async Task SendSayMessageAsync(SayMessage message)
         {
             var text = Newtonsoft.Json.JsonConvert.SerializeObject(message);
             await _client.PublishAsync(TtsMessageQueueName, text);
-        }
-       
-        public async Task ConfirmActionAsync(IntentMessage message)
-        {
-            var answers = new List<string>()
-            {
-                "Ok",
-                "Bin dran",
-                "Ich prüfe",
-                "Moment bitte",
-                "Verstanden"
-            };
-
-            var index = _random.Next(0, answers.Count);
-            var answer = answers[index];
-
-            await SendSayMessageAsync(new SayMessage() { Id = Guid.NewGuid().ToString(), Language = _defaultLanguage, SessionId = message.SessionId, SiteId = message.SiteId, Text = answer });
         }
 
 
@@ -322,17 +297,28 @@ namespace SDO.SnipsAI.Client
 
         #region IDialogAPI
 
+        /// <inheritdoc/>
         public IDialogOnIntentDetectedHandler OnIntentDetectedHandler { get; set; }
+
+        /// <inheritdoc/>
         public IDialogOnIntentNotRecognizedHandler OnIntentNotRecognizedHandler { get; set; }
+
+        /// <inheritdoc/>
         public IDialogOnSessionStartedHandler OnSessionStartedHandler { get; set; }
+
+        /// <inheritdoc/>
         public IDialogOnSessionQueuedHandler OnSessionQueuedHandler { get; set; }
+
+        /// <inheritdoc/>
         public IDialogOnSessionEndedHandler OnSessionEndedHandler { get; set; }
 
+        /// <inheritdoc/>
         public async Task StartSessionAsync()
         {
             await StartSessionAsync(text: null);
         }
 
+        /// <inheritdoc/>
         public async Task StartSessionAsync(StartSessionMessage message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
@@ -341,6 +327,7 @@ namespace SDO.SnipsAI.Client
             await _client.PublishAsync(DialogStartSessionMessageQueueName, serializedMessage);
         }
 
+        /// <inheritdoc/>
         public async Task StartSessionAsync(string text = null, bool canBeEnqueued = true, bool sendIntentNotRecognized = false, string customData = null, string siteId = null, params string[] allowedIntents)
         {
             var message = new StartSessionMessage()
@@ -353,6 +340,7 @@ namespace SDO.SnipsAI.Client
             await StartSessionAsync(message);
         }
 
+        /// <inheritdoc/>
         public async Task ContinueSessionAsync(ContinueSessionMessage message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
@@ -361,6 +349,7 @@ namespace SDO.SnipsAI.Client
             await _client.PublishAsync(DialogContinoueSessionMessageQueueName, serializedMessage);
         }
 
+        /// <inheritdoc/>
         public async Task ContinueSessionAsync(string sessionId, string text, bool sendIntentNotRecognized = false, string customerData = null, string slot = null, params string[] allowedIntents)
         {
             var message = new ContinueSessionMessage()
@@ -376,12 +365,14 @@ namespace SDO.SnipsAI.Client
             await ContinueSessionAsync(message);
         }
 
+        /// <inheritdoc/>
         public async Task EndSessionAsync(EndSessionMessage message)
         {
             var serializedMessage = Newtonsoft.Json.JsonConvert.SerializeObject(message);
             await _client.PublishAsync(DialogEndSessionMessageQueueName, serializedMessage);
         }
 
+        /// <inheritdoc/>
         public async Task EndSessionAsync(string sessionId, string text)
         {
             var message = new EndSessionMessage() { SessionId = sessionId, Text = text };
@@ -392,12 +383,15 @@ namespace SDO.SnipsAI.Client
 
         #region Feedback API
 
+
+        /// <inheritdoc/>
         public async Task ToggleFeedbackSoundOnAsync(string siteId)
         {
             string message = $"{{\"siteId\": \"{siteId}\"}}";
             await _client.PublishAsync(FeedbackToogleSoundOnQueueName, message);
         }
 
+        /// <inheritdoc/>
         public async Task ToggleFeedbackSoundOffAsync(string siteId)
         {
             string message = $"{{\"siteId\": \"{siteId}\"}}";
@@ -408,24 +402,28 @@ namespace SDO.SnipsAI.Client
 
         #region IAudioServer
 
+        /// <inheritdoc/>
         public IAudioServerOnFrameReceivedHandler OnFrameReceivedHandler { get; set; }
 
         #endregion
 
         #region IWakewordApi
 
+        /// <inheritdoc/>
         public async Task ToggleWakewordOnAsync(string siteId)
         {
             string message = FormatSiteAndSessionMessage(siteId);
             await _client.PublishAsync(WakewordToogleWakewordOnQueueName, message);
         }
 
+        /// <inheritdoc/>
         public async Task ToggleWakewordOffAsync(string siteId, string sessionId = null)
         {
             string message = FormatSiteAndSessionMessage(siteId, sessionId);
             await _client.PublishAsync(WakewordToogleWakewordOffQueueName, message);
         }
 
+        /// <inheritdoc/>
         public async Task SendWakewordDetectedAsync(string wakewordId, WakewordDetectedMessage message)
         {
             var serializedMessage = Newtonsoft.Json.JsonConvert.SerializeObject(message);
@@ -433,24 +431,28 @@ namespace SDO.SnipsAI.Client
             await _client.PublishAsync(messageQueueName, serializedMessage);
         }
 
+        /// <inheritdoc/>
         public async Task ToggleAsrOnAsync()
         {
             string message = string.Empty;
             await _client.PublishAsync(AsrToogleOnQueueName, message);
         }
 
+        /// <inheritdoc/>
         public async Task ToggleAsrOffAsync()
         {
             string message = string.Empty;
             await _client.PublishAsync(AsrToogleOffQueueName, message);
         }
 
+        /// <inheritdoc/>
         public async Task StartAsrToListen(string siteId, string sessionId = null)
         {
             string message = FormatSiteAndSessionMessage(siteId);
             await _client.PublishAsync(AsrStartListeningQueueName, message);
         }
 
+        /// <inheritdoc/>
         public async Task StopAsrToListen(string siteId, string sessionId = null)
         {
             string message = FormatSiteAndSessionMessage(siteId);
@@ -531,6 +533,5 @@ namespace SDO.SnipsAI.Client
         }
 
         #endregion
-
     }
 }

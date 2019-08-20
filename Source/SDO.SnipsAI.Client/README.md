@@ -1,12 +1,64 @@
 ﻿# SDO.SnipsAI.Client
 
-SDO.SnipsAI.Client is a client library for [snips.ai](http://snips.ai).
-It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrastructure.
+SDO.SnipsAI.Client is a **INOFFICIAL** client library for [snips.ai](http://snips.ai) targeting .NET Standard 2.0
+It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrastructure and implements the hermes protocol.
+
+## Used Libraries
+
+ * [MQTTnet](https://github.com/chkr1011/MQTTnet)
+ * [NewtonSoft Json](https://www.newtonsoft.com/json)
+ * [JsonSubTypes](https://github.com/manuc66/JsonSubTypes)
 
 ## Features
 
+ * Implements the dialog api [Link](https://docs.snips.ai/reference/dialogue)
+ * Support of all slot types [Link](https://docs.snips.ai/articles/platform/dialog/slot-types)
 
+## How to start
 
+ * Create your app and intents using the snips.ai webinterface
+ * Install the app on the raspberry pi using sam
+ * Install .NET Core 2.2+ on the rasperry pi
+ * Create a console application targeting .NET Core 2.2
+   * Add the client as a reference (TODO: Nuget Package)
+   * Add the dependencies (MQTTnet, Newtonsoft Json, JsonSubTypes) 
+ * Create a class which implements IDialog
+
+        public class TestDialog : IDialog
+        {
+            private ISnipsApi _messageSender;
+
+            public string InitialIntendName => "sdoempke:Greeting";
+
+            public async Task OnIntentAsync(IntentMessage intent, Session session)
+            {
+                //Check the Slots in intent
+                await _messageSender.EndSessionAsync(intent.SessionId, "Test is Done!");
+            }
+
+            public void OnRegistration(ISnipsApi voiceMessageSender)
+            {
+                _messageSender = voiceMessageSender;
+            }
+
+            public void OnUnregistration()
+            {
+            }
+        }
+
+ * Register this class and connect to the Mosquitto server
+
+        public static void Main(string[] args) 
+        {
+            var snipsClient = new SnipsClient();
+
+            snipsClient.RegisterDialog(new TestDialog());
+            snipsClient.Connect("127.0.0.1")
+
+            Console.ReadLine();
+        }
+
+ * Start the application on the raspberry pi or on your development system (check for the correct urls) 
 
 ## License
 

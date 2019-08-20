@@ -5,9 +5,17 @@ using System;
 namespace SDO.SnipsAI.Client.Hermes.Nlu
 {
     [JsonConverter(typeof(JsonSubtypes), "kind")]
-    [JsonSubtypes.KnownSubType(typeof(InstantTimeValue), "InstantTime")]
-    [JsonSubtypes.KnownSubType(typeof(TimeIntervalValue), "TimeInterval")]
-    [JsonSubtypes.KnownSubType(typeof(NumberValue), "Number")]
+    [JsonSubtypes.KnownSubType(typeof(InstantTime), "InstantTime")]
+    [JsonSubtypes.KnownSubType(typeof(TimeInterval), "TimeInterval")]
+    [JsonSubtypes.KnownSubType(typeof(Duration), "Duration")]
+    [JsonSubtypes.KnownSubType(typeof(MusicArtist), "MusicArtist")]
+    [JsonSubtypes.KnownSubType(typeof(MusicAlbum), "MusicAlbum")]
+    [JsonSubtypes.KnownSubType(typeof(MusicTrack), "MusicTrack")]
+    [JsonSubtypes.KnownSubType(typeof(Number), "Number")]
+    [JsonSubtypes.KnownSubType(typeof(Ordinal), "Ordinal")]
+    [JsonSubtypes.KnownSubType(typeof(AmountOfMoney), "AmountOfMoney")]
+    [JsonSubtypes.KnownSubType(typeof(Percentage), "Percentage")]
+    [JsonSubtypes.KnownSubType(typeof(Temperature), "Temperature")]
     [JsonSubtypes.KnownSubType(typeof(CustomValue), "Custom")]
     [JsonObject]
     public abstract class ValueBase : IConvertible
