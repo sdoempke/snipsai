@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using MQTTnet;
@@ -13,6 +12,7 @@ using SDO.SnipsAI.Client.Hermes.AudioServer;
 using SDO.SnipsAI.Client.Hermes.Dialog;
 using SDO.SnipsAI.Client.Hermes.Tts;
 using SDO.SnipsAI.Client.Hermes.Wakeword;
+using SDO.SnipsAI.Client.Logging;
 
 namespace SDO.SnipsAI.Client
 {
@@ -64,9 +64,9 @@ namespace SDO.SnipsAI.Client
         public const string TtsMessageQueueName = "hermes/tts/say";
 
         /// <summary>
-        /// Instance of random for internal usage
+        /// Logger
         /// </summary>
-        private Random _random = new Random();
+        private readonly ILog _logger;
 
         /// <summary>
         /// Factory for MQTT clients
@@ -93,6 +93,7 @@ namespace SDO.SnipsAI.Client
         /// </summary>
         public SnipsClient()
         {
+            _logger = LogProvider.GetCurrentClassLogger();
             _factory = new MQTTnet.MqttFactory();
         }
 
@@ -143,19 +144,27 @@ namespace SDO.SnipsAI.Client
         /// <returns></returns>
         public async Task HandleConnectedAsync(MqttClientConnectedEventArgs eventArgs)
         {
-            Console.WriteLine("### CONNECTED WITH SERVER ###");
+            _logger.Debug($"{nameof(HandleConnectedAsync)} - connected with server");
 
-            await _client.SubscribeAsync(DialogIntentMessageQueueName);
-            if (OnFrameReceivedHandler != null)
+            try
             {
-                await _client.SubscribeAsync(AudioFrameMessageQueueName);
-            }
-            await _client.SubscribeAsync(DialogSessionStartedMessageQueueName);
-            await _client.SubscribeAsync(DialogSessionQueuedMessageQueueName);
-            await _client.SubscribeAsync(DialogSessionEndedMessageQueueName);
-            await _client.SubscribeAsync(DialogIntentNotRecognizedMessageQueueName);
+                await _client.SubscribeAsync(DialogIntentMessageQueueName);
+                if (OnFrameReceivedHandler != null)
+                {
+                    await _client.SubscribeAsync(AudioFrameMessageQueueName);
+                }
+                await _client.SubscribeAsync(DialogSessionStartedMessageQueueName);
+                await _client.SubscribeAsync(DialogSessionQueuedMessageQueueName);
+                await _client.SubscribeAsync(DialogSessionEndedMessageQueueName);
+                await _client.SubscribeAsync(DialogIntentNotRecognizedMessageQueueName);
 
-            Console.WriteLine("### SUBSCRIBED ###");
+                _logger.Debug($"{nameof(HandleConnectedAsync)} - successfully subscribed.");
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, $"{nameof(HandleConnectedAsync)} - failed to subscribe!");
+                throw;
+            }
         }
 
         /// <summary>
@@ -167,115 +176,131 @@ namespace SDO.SnipsAI.Client
         {
             string wildCardContent = null;
 
-            if (IsQueue(AudioFrameMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
+            try
             {
-                var handler = OnFrameReceivedHandler;
-                if(handler != null)
+
+                if (IsQueue(AudioFrameMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
                 {
-                    await handler.HandleOnFrameReceviedAsync(wildCardContent, e.ApplicationMessage.Payload);
-                }
-            }
-            else
-            {
-                var payLoadString = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-
-                Console.WriteLine("### RECEIVED APPLICATION MESSAGE ###");
-                Console.WriteLine($"+ Topic = {e.ApplicationMessage.Topic}");
-                Console.WriteLine($"+ Payload = {payLoadString}");
-                Console.WriteLine($"+ QoS = {e.ApplicationMessage.QualityOfServiceLevel}");
-                Console.WriteLine($"+ Retain = {e.ApplicationMessage.Retain}");
-                Console.WriteLine();
-
-                if (IsQueue(DialogSessionStartedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
-                {
-                    var sessionStartedMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<SessionStartedMessage>(payLoadString);
-                    var session = new Session(sessionStartedMessage.SessionId, sessionStartedMessage.SiteId);
-                    _sessionMap.AddOrUpdate(session.Id, session, (a, b) => session);
-
-                    var handler = OnSessionStartedHandler;
-                    if(handler != null)
-                    {
-                        await handler.HandleOnSessionStartedAsync(sessionStartedMessage);
-                    }
-                }
-                else if (IsQueue(DialogSessionQueuedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
-                {
-                    var sessionQueuedMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<SessionQueuedMessage>(payLoadString);
-
-                    var handler = OnSessionQueuedHandler;
+                    var handler = OnFrameReceivedHandler;
                     if (handler != null)
                     {
-                        await handler.HandleOnSessionQueuedAsync(sessionQueuedMessage);
+                        await handler.HandleOnFrameReceviedAsync(wildCardContent, e.ApplicationMessage.Payload);
                     }
                 }
-                else if (IsQueue(DialogIntentNotRecognizedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
+                else
                 {
-                    var intentNotRecognizedMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<IntentNotRecognizedMessage>(payLoadString);
+                    var payLoadString = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
-                    var handler = OnIntentNotRecognizedHandler;
-                    if (handler != null)
+                    _logger.Debug($"{nameof(HandleApplicationMessageReceivedAsync)}(ClientId: {e?.ClientId}, ApplicationMessage-Topic: {e?.ApplicationMessage?.Topic}, ApplicationMessage-Payload: {payLoadString}");
+
+                    if (IsQueue(DialogSessionStartedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
                     {
-                        await handler.HandleOnIntentNotRecognizedAsync(intentNotRecognizedMessage);
-                    }
-                }
-                else if (IsQueue(DialogSessionEndedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
-                {
-                    var sessionEndedMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<SessionEndedMessage>(payLoadString);
+                        var sessionStartedMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<SessionStartedMessage>(payLoadString);
+                        var session = new Session(sessionStartedMessage.SessionId, sessionStartedMessage.SiteId);
+                        _sessionMap.AddOrUpdate(session.Id, session, (a, b) => session);
 
-                    Session existingSession = null;
-                    if(_sessionMap.TryRemove(sessionEndedMessage.SessionId, out existingSession))
-                    {
-                        existingSession.OnEnded(sessionEndedMessage.Termination);
-                    }
-
-                    var handler = OnSessionEndedHandler;
-                    if (handler != null)
-                    {
-                        await handler.HandleOnSessionEndedAsync(sessionEndedMessage);
-                    }
-                }
-                else if (IsQueue(DialogIntentMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
-                {
-                    var parsedIntend = Newtonsoft.Json.JsonConvert.DeserializeObject<IntentMessage>(payLoadString);
-
-                    Session existingSession = null;
-                    if (_sessionMap.TryGetValue(parsedIntend.SessionId, out existingSession))
-                    {
-                        existingSession.IntentMessages.Add(parsedIntend);
-
-                        if (existingSession.Dialog != null)
+                        var handler = OnSessionStartedHandler;
+                        if (handler != null)
                         {
-                            await existingSession.Dialog.OnIntentAsync(parsedIntend, existingSession);
+                            await handler.HandleOnSessionStartedAsync(sessionStartedMessage);
                         }
-                        else
-                        {
-                            IDialog foundDialog = null;
+                    }
+                    else if (IsQueue(DialogSessionQueuedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
+                    {
+                        var sessionQueuedMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<SessionQueuedMessage>(payLoadString);
 
-                            if (_dialogMap.TryGetValue(parsedIntend.Intent.Name, out foundDialog))
+                        var handler = OnSessionQueuedHandler;
+                        if (handler != null)
+                        {
+                            await handler.HandleOnSessionQueuedAsync(sessionQueuedMessage);
+                        }
+                    }
+                    else if (IsQueue(DialogIntentNotRecognizedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
+                    {
+                        var intentNotRecognizedMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<IntentNotRecognizedMessage>(payLoadString);
+
+                        var handler = OnIntentNotRecognizedHandler;
+                        if (handler != null)
+                        {
+                            await handler.HandleOnIntentNotRecognizedAsync(intentNotRecognizedMessage);
+                        }
+                    }
+                    else if (IsQueue(DialogSessionEndedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
+                    {
+                        var sessionEndedMessage = Newtonsoft.Json.JsonConvert.DeserializeObject<SessionEndedMessage>(payLoadString);
+
+                        Session existingSession = null;
+                        if (_sessionMap.TryRemove(sessionEndedMessage.SessionId, out existingSession))
+                        {
+                            existingSession.OnEnded(sessionEndedMessage.Termination);
+                        }
+
+                        var handler = OnSessionEndedHandler;
+                        if (handler != null)
+                        {
+                            await handler.HandleOnSessionEndedAsync(sessionEndedMessage);
+                        }
+                    }
+                    else if (IsQueue(DialogIntentMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
+                    {
+                        var parsedIntend = Newtonsoft.Json.JsonConvert.DeserializeObject<IntentMessage>(payLoadString);
+
+                        Session existingSession = null;
+                        if (_sessionMap.TryGetValue(parsedIntend.SessionId, out existingSession))
+                        {
+                            existingSession.IntentMessages.Add(parsedIntend);
+
+                            if (existingSession.Dialog != null)
                             {
-                                existingSession.SetDialog(foundDialog);
-                                await foundDialog.OnIntentAsync(parsedIntend, existingSession);
+                                await existingSession.Dialog.OnIntentAsync(parsedIntend, existingSession);
+                            }
+                            else
+                            {
+                                IDialog foundDialog = null;
+
+                                if (_dialogMap.TryGetValue(parsedIntend.Intent.Name, out foundDialog))
+                                {
+                                    existingSession.SetDialog(foundDialog);
+                                    await foundDialog.OnIntentAsync(parsedIntend, existingSession);
+                                }
                             }
                         }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"{nameof(HandleApplicationMessageReceivedAsync)}(ClientId: {e?.ClientId}, ApplicationMessage-Topic: {e?.ApplicationMessage?.Payload}, ApplicationMessage-Payload: {e?.ApplicationMessage?.Payload}");
+            }
         }
 
-
+        /// <summary>
+        /// Registers a new dialog but only of no other dialog is registered for its InitialIntentName
+        /// </summary>
+        /// <param name="dialog">Implementation of IDialog to register</param>
+        /// <exception cref="ArgumentNullException">if dialog is null</exception>
         public void RegisterDialog(IDialog dialog)
         {
-            if (!_dialogMap.ContainsKey(dialog.InitialIntendName))
+            if (dialog == null) throw new ArgumentNullException(nameof(dialog));
+
+            if (!_dialogMap.ContainsKey(dialog.InitialIntentName))
             {
-                _dialogMap.AddOrUpdate(dialog.InitialIntendName, dialog, (x, y) => dialog);
+                _dialogMap.AddOrUpdate(dialog.InitialIntentName, dialog, (x, y) => dialog);
                 dialog.OnRegistration(this);
             }
         }
 
+        /// <summary>
+        /// Unregisters a dialog 
+        /// </summary>
+        /// <param name="dialog">Implementation of IDialog to unregister</param>
+        /// <exception cref="ArgumentNullException">if dialog is null</exception>
         public void UnregisterDialog(IDialog dialog)
         {
+            if (dialog == null) throw new ArgumentNullException(nameof(dialog));
+
             IDialog foundDialog;
-            if (_dialogMap.TryRemove(dialog.InitialIntendName, out foundDialog))
+            if (_dialogMap.TryRemove(dialog.InitialIntentName, out foundDialog))
             {
                 foundDialog.OnUnregistration();
             }

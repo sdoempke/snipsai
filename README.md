@@ -9,6 +9,7 @@ It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrast
  * [MQTTnet](https://github.com/chkr1011/MQTTnet)
  * [NewtonSoft Json](https://www.newtonsoft.com/json)
  * [JsonSubTypes](https://github.com/manuc66/JsonSubTypes)
+ * [LibLog](https://github.com/damianh/LibLog)
 
 ## Features
 
@@ -29,8 +30,10 @@ It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrast
         {
             private ISnipsApi _snipsApi;
 
-            public string InitialIntendName => "sdoempke:Greeting";
+            //Replace this with your intent
+            public string InitialIntentName => "sdoempke:Greeting";
 
+            //Called when the intent has been recognized
             public async Task OnIntentAsync(IntentMessage intent, Session session)
             {
                 //Check the Slots in intent

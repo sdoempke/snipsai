@@ -15,7 +15,7 @@ namespace SDO.SnipsAI.Client
         /// <summary>
         /// What is the name of the initial intent that is handled with this dialog?
         /// </summary>
-        string InitialIntendName { get; }
+        string InitialIntentName { get; }
 
         /// <summary>
         /// Is called when the handler is registered

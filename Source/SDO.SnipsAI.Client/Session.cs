@@ -6,6 +6,9 @@ namespace SDO.SnipsAI.Client
 {
     /// <summary>
     /// Class representing a session in snips
+    /// It is used to:
+    ///    1) Manage active Sessions
+    ///    2) Collected data of a active sessions
     /// </summary>
     public class Session
     {
