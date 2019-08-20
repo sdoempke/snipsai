@@ -1,6 +1,6 @@
 # SDO.SnipsAI.Client
 
-SDO.SnipsAI.Client is a **INOFFICIAL** client library for [snips.ai](http://snips.ai) targeting .NET Standard 2.0
+SDO.SnipsAI.Client is an **INOFFICIAL** client library for [snips.ai](http://snips.ai) targeting .NET Standard 2.0
 It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrastructure and implements the hermes protocol.
 
 ## Used Libraries
@@ -26,19 +26,19 @@ It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrast
 
         public class TestDialog : IDialog
         {
-            private ISnipsApi _messageSender;
+            private ISnipsApi _snipsApi;
 
             public string InitialIntendName => "sdoempke:Greeting";
 
             public async Task OnIntentAsync(IntentMessage intent, Session session)
             {
                 //Check the Slots in intent
-                await _messageSender.EndSessionAsync(intent.SessionId, "Test is Done!");
+                await _snipsApi.EndSessionAsync(intent.SessionId, "Test is Done!");
             }
 
-            public void OnRegistration(ISnipsApi voiceMessageSender)
+            public void OnRegistration(ISnipsApi snipsApi)
             {
-                _messageSender = voiceMessageSender;
+                _snipsApi = snipsApi;
             }
 
             public void OnUnregistration()
