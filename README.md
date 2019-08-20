@@ -1,6 +1,7 @@
 # SDO.SnipsAI.Client
 
-SDO.SnipsAI.Client is an **INOFFICIAL** client library for [snips.ai](http://snips.ai) targeting .NET Standard 2.0
+SDO.SnipsAI.Client is an **INOFFICIAL** client library for [snips.ai](http://snips.ai) targeting .NET Standard 2.0.
+
 It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrastructure and implements the hermes protocol.
 
 ## Used Libraries

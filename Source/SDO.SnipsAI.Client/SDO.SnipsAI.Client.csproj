@@ -3,6 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>SDO.SnipsAI.Client</AssemblyName>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Steven Doempke</Authors>
+    <Company />
+    <Description>Inofficial .NET client for snips.ai. It connects to mosquitto MQTT server and implements the hermes protocol.</Description>
+    <Version>0.1.0</Version>
+    <PackageProjectUrl>https://github.com/sdoempke/snipsai</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sdoempke/snipsai</RepositoryUrl>
+    <PackageTags>snips.ai</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseFile>LICENCE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +20,13 @@
     <PackageReference Include="MQTTnet" Version="3.0.8" />
     <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="3.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="LICENCE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
