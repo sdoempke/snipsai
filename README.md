@@ -57,7 +57,7 @@ It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrast
             var snipsClient = new SnipsClient();
 
             snipsClient.RegisterDialog(new TestDialog());
-            snipsClient.Connect("127.0.0.1")
+            snipsClient.Connect("127.0.0.1");
 
             Console.ReadLine();
         }
