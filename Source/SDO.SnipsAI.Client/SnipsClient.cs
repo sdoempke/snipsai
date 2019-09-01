@@ -281,10 +281,11 @@ namespace SDO.SnipsAI.Client
         /// <param name="topic"></param>
         /// <param name="payload"></param>
         /// <returns></returns>
-        private Task<MqttClientPublishResult> PublishMessageAsync(string topic, string payload)
+        private async Task<MqttClientPublishResult> PublishMessageAsync(string topic, string payload)
         {
-            _logger.Debug($"{nameof(PublishMessageAsync)}(Topic: {topic}; Payload: {payload}");
-            return _client.PublishAsync(topic, payload);
+            var result = await _client.PublishAsync(topic, payload);
+            _logger.Debug($"{nameof(PublishMessageAsync)}(Topic: {topic}; Payload: {payload}) -> PublishResult(ReasonCode: {result?.ReasonCode}; ReasonString:{result?.ReasonString}; PacketIdentifier:{result?.PacketIdentifier})");
+            return result;
         }
 
         /// <summary>
