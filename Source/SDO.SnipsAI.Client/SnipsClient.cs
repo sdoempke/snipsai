@@ -6,6 +6,7 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Connecting;
 using MQTTnet.Client.Options;
+using MQTTnet.Client.Publishing;
 using MQTTnet.Client.Receiving;
 using MQTTnet.Extensions.ManagedClient;
 using SDO.SnipsAI.Client.Hermes.AudioServer;
@@ -275,6 +276,18 @@ namespace SDO.SnipsAI.Client
         }
 
         /// <summary>
+        /// Publishes the given payload as message to the given topic
+        /// </summary>
+        /// <param name="topic"></param>
+        /// <param name="payload"></param>
+        /// <returns></returns>
+        private Task<MqttClientPublishResult> PublishMessageAsync(string topic, string payload)
+        {
+            _logger.Debug($"{nameof(PublishMessageAsync)}(Topic: {topic}; Payload: {payload}");
+            return _client.PublishAsync(topic, payload);
+        }
+
+        /// <summary>
         /// Registers a new dialog but only of no other dialog is registered for its InitialIntentName
         /// </summary>
         /// <param name="dialog">Implementation of IDialog to register</param>
@@ -316,7 +329,7 @@ namespace SDO.SnipsAI.Client
         public async Task SendSayMessageAsync(SayMessage message)
         {
             var text = Newtonsoft.Json.JsonConvert.SerializeObject(message);
-            await _client.PublishAsync(TtsMessageQueueName, text);
+            await PublishMessageAsync(TtsMessageQueueName, text);
         }
 
 
@@ -351,7 +364,7 @@ namespace SDO.SnipsAI.Client
             if (message == null) throw new ArgumentNullException(nameof(message));
 
             var serializedMessage = Newtonsoft.Json.JsonConvert.SerializeObject(message);
-            await _client.PublishAsync(DialogStartSessionMessageQueueName, serializedMessage);
+            await PublishMessageAsync(DialogStartSessionMessageQueueName, serializedMessage);
         }
 
         /// <inheritdoc/>
@@ -373,7 +386,7 @@ namespace SDO.SnipsAI.Client
             if (message == null) throw new ArgumentNullException(nameof(message));
 
             var serializedMessage = Newtonsoft.Json.JsonConvert.SerializeObject(message);
-            await _client.PublishAsync(DialogContinoueSessionMessageQueueName, serializedMessage);
+            await PublishMessageAsync(DialogContinoueSessionMessageQueueName, serializedMessage);
         }
 
         /// <inheritdoc/>
@@ -396,7 +409,7 @@ namespace SDO.SnipsAI.Client
         public async Task EndSessionAsync(EndSessionMessage message)
         {
             var serializedMessage = Newtonsoft.Json.JsonConvert.SerializeObject(message);
-            await _client.PublishAsync(DialogEndSessionMessageQueueName, serializedMessage);
+            await PublishMessageAsync(DialogEndSessionMessageQueueName, serializedMessage);
         }
 
         /// <inheritdoc/>
@@ -415,14 +428,14 @@ namespace SDO.SnipsAI.Client
         public async Task ToggleFeedbackSoundOnAsync(string siteId)
         {
             string message = $"{{\"siteId\": \"{siteId}\"}}";
-            await _client.PublishAsync(FeedbackToogleSoundOnQueueName, message);
+            await PublishMessageAsync(FeedbackToogleSoundOnQueueName, message);
         }
 
         /// <inheritdoc/>
         public async Task ToggleFeedbackSoundOffAsync(string siteId)
         {
             string message = $"{{\"siteId\": \"{siteId}\"}}";
-            await _client.PublishAsync(FeedbackToogleSoundOffQueueName, message);
+            await PublishMessageAsync(FeedbackToogleSoundOffQueueName, message);
         }
 
         #endregion
@@ -440,14 +453,14 @@ namespace SDO.SnipsAI.Client
         public async Task ToggleWakewordOnAsync(string siteId)
         {
             string message = FormatSiteAndSessionMessage(siteId);
-            await _client.PublishAsync(WakewordToogleWakewordOnQueueName, message);
+            await PublishMessageAsync(WakewordToogleWakewordOnQueueName, message);
         }
 
         /// <inheritdoc/>
         public async Task ToggleWakewordOffAsync(string siteId, string sessionId = null)
         {
             string message = FormatSiteAndSessionMessage(siteId, sessionId);
-            await _client.PublishAsync(WakewordToogleWakewordOffQueueName, message);
+            await PublishMessageAsync(WakewordToogleWakewordOffQueueName, message);
         }
 
         /// <inheritdoc/>
@@ -455,35 +468,35 @@ namespace SDO.SnipsAI.Client
         {
             var serializedMessage = Newtonsoft.Json.JsonConvert.SerializeObject(message);
             var messageQueueName = WakewordOnDetectedQueueName.Replace("#", wakewordId);
-            await _client.PublishAsync(messageQueueName, serializedMessage);
+            await PublishMessageAsync(messageQueueName, serializedMessage);
         }
 
         /// <inheritdoc/>
         public async Task ToggleAsrOnAsync()
         {
             string message = string.Empty;
-            await _client.PublishAsync(AsrToogleOnQueueName, message);
+            await PublishMessageAsync(AsrToogleOnQueueName, message);
         }
 
         /// <inheritdoc/>
         public async Task ToggleAsrOffAsync()
         {
             string message = string.Empty;
-            await _client.PublishAsync(AsrToogleOffQueueName, message);
+            await PublishMessageAsync(AsrToogleOffQueueName, message);
         }
 
         /// <inheritdoc/>
         public async Task StartAsrToListen(string siteId, string sessionId = null)
         {
             string message = FormatSiteAndSessionMessage(siteId);
-            await _client.PublishAsync(AsrStartListeningQueueName, message);
+            await PublishMessageAsync(AsrStartListeningQueueName, message);
         }
 
         /// <inheritdoc/>
         public async Task StopAsrToListen(string siteId, string sessionId = null)
         {
             string message = FormatSiteAndSessionMessage(siteId);
-            await _client.PublishAsync(AsrStopListeningQueueName, message);
+            await PublishMessageAsync(AsrStopListeningQueueName, message);
         }
 
         #endregion

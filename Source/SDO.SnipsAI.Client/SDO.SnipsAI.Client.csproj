@@ -7,7 +7,7 @@
     <Authors>Steven Doempke</Authors>
     <Company />
     <Description>Inofficial .NET client for snips.ai. It connects to mosquitto MQTT server and implements the hermes protocol.</Description>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <PackageProjectUrl>https://github.com/sdoempke/snipsai</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sdoempke/snipsai</RepositoryUrl>
     <PackageTags>snips.ai</PackageTags>
