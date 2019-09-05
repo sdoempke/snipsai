@@ -32,8 +32,15 @@ namespace SDO.SnipsAI.Client
         /// <summary>
         /// Is called when a indent is found  
         /// </summary>
-        /// <param name="intend"></param>
-        /// <param name="session"></param>
+        /// <param name="intend">Received intent</param>
+        /// <param name="session">Session</param>
+        /// <returns>Task as this is a async method</returns>
         Task OnIntentAsync(IntentMessage intend, Session session);
+
+        /// <summary>
+        /// Is called when a session related to this dialog has ended
+        /// </summary>
+        /// <returns>Task as this is a async method</returns>
+        Task OnSessionEndedAsync(SessionTermination terminationReason);
     }
 }

@@ -46,6 +46,16 @@ namespace SDO.SnipsAI.Client.Demo
         }
 
         /// <summary>
+        /// Called when a session is terminated
+        /// </summary>
+        /// <param name="terminationReason">reason for termination</param>
+        /// <returns></returns>
+        public Task OnSessionEndedAsync(SessionTermination terminationReason)
+        {
+            return Task.FromResult(false);
+        }
+
+        /// <summary>
         /// Called when the Dialog is unregistered
         /// </summary>
         public void OnUnregistration()

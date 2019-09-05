@@ -185,7 +185,7 @@ namespace SDO.SnipsAI.Client
                     var handler = OnFrameReceivedHandler;
                     if (handler != null)
                     {
-                        await handler.HandleOnFrameReceviedAsync(wildCardContent, e.ApplicationMessage.Payload);
+                        await handler.HandleOnFrameReceviedAsync(wildCardContent, e.ApplicationMessage.Payload).ConfigureAwait(false);
                     }
                 }
                 else
@@ -203,7 +203,7 @@ namespace SDO.SnipsAI.Client
                         var handler = OnSessionStartedHandler;
                         if (handler != null)
                         {
-                            await handler.HandleOnSessionStartedAsync(sessionStartedMessage);
+                            await handler.HandleOnSessionStartedAsync(sessionStartedMessage).ConfigureAwait(false);
                         }
                     }
                     else if (IsQueue(DialogSessionQueuedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
@@ -213,7 +213,7 @@ namespace SDO.SnipsAI.Client
                         var handler = OnSessionQueuedHandler;
                         if (handler != null)
                         {
-                            await handler.HandleOnSessionQueuedAsync(sessionQueuedMessage);
+                            await handler.HandleOnSessionQueuedAsync(sessionQueuedMessage).ConfigureAwait(false);
                         }
                     }
                     else if (IsQueue(DialogIntentNotRecognizedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
@@ -223,7 +223,7 @@ namespace SDO.SnipsAI.Client
                         var handler = OnIntentNotRecognizedHandler;
                         if (handler != null)
                         {
-                            await handler.HandleOnIntentNotRecognizedAsync(intentNotRecognizedMessage);
+                            await handler.HandleOnIntentNotRecognizedAsync(intentNotRecognizedMessage).ConfigureAwait(false);
                         }
                     }
                     else if (IsQueue(DialogSessionEndedMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
@@ -233,13 +233,13 @@ namespace SDO.SnipsAI.Client
                         Session existingSession = null;
                         if (_sessionMap.TryRemove(sessionEndedMessage.SessionId, out existingSession))
                         {
-                            existingSession.OnEnded(sessionEndedMessage.Termination);
+                            await existingSession.OnEndedAsync(sessionEndedMessage.Termination).ConfigureAwait(false);
                         }
 
                         var handler = OnSessionEndedHandler;
                         if (handler != null)
                         {
-                            await handler.HandleOnSessionEndedAsync(sessionEndedMessage);
+                            await handler.HandleOnSessionEndedAsync(sessionEndedMessage).ConfigureAwait(false);
                         }
                     }
                     else if (IsQueue(DialogIntentMessageQueueName, e.ApplicationMessage.Topic, out wildCardContent))
@@ -253,7 +253,7 @@ namespace SDO.SnipsAI.Client
 
                             if (existingSession.Dialog != null)
                             {
-                                await existingSession.Dialog.OnIntentAsync(parsedIntend, existingSession);
+                                await existingSession.Dialog.OnIntentAsync(parsedIntend, existingSession).ConfigureAwait(false);
                             }
                             else
                             {
@@ -262,7 +262,7 @@ namespace SDO.SnipsAI.Client
                                 if (_dialogMap.TryGetValue(parsedIntend.Intent.Name, out foundDialog))
                                 {
                                     existingSession.SetDialog(foundDialog);
-                                    await foundDialog.OnIntentAsync(parsedIntend, existingSession);
+                                    await foundDialog.OnIntentAsync(parsedIntend, existingSession).ConfigureAwait(false);
                                 }
                             }
                         }
