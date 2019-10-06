@@ -48,6 +48,12 @@ It uses MQTTnet to connect to mosquitto MQTT server used by the snips.ai infrast
             public void OnUnregistration()
             {
             }
+
+			// Called when a session is terminated
+			public Task OnSessionEndedAsync(SessionTermination terminationReason)
+			{
+				return Task.FromResult(false);
+			}
         }
 
  * Register this class and connect to the Mosquitto server

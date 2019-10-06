@@ -17,8 +17,8 @@ namespace SDO.SnipsAI.Client.Test.Hermes.Nlu
             var parsedInstance = instance as TimeInterval;
             Assert.IsNotNull(parsedInstance);
 
-            Assert.AreEqual(new DateTime(2017, 06, 07, 17, 00, 00, DateTimeKind.Utc), parsedInstance.ValueFrom);
-            Assert.AreEqual(new DateTime(2017, 06, 08, 18, 00, 00, DateTimeKind.Utc), parsedInstance.ValueTo);
+            Assert.AreEqual(new DateTime(2017, 06, 07, 17, 00, 00, DateTimeKind.Unspecified), parsedInstance.ValueFrom);
+            Assert.AreEqual(new DateTime(2017, 06, 08, 18, 00, 00, DateTimeKind.Unspecified), parsedInstance.ValueTo);
         }
     }
 }
