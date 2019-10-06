@@ -11,14 +11,14 @@ namespace SDO.SnipsAI.Client.Test.Hermes.Nlu
         [TestMethod]
         public void Deserialize()
         {
-            var instance = JsonConvert.DeserializeObject<ValueBase>("{\"kind\": \"TimeInterval\", \"from\": \"2017-06-07 17:00:00+02:00\", \"to\": \"2017-06-08 18:00:00+02:00\"}");
+            var instance = JsonConvert.DeserializeObject<ValueBase>("{\"kind\": \"TimeInterval\", \"from\": \"2017-06-07 17:00:00\", \"to\": \"2017-06-08 18:00:00\"}");
             Assert.IsNotNull(instance);
 
             var parsedInstance = instance as TimeInterval;
             Assert.IsNotNull(parsedInstance);
 
-            Assert.AreEqual(new DateTime(2017, 06, 07, 17, 00, 00, DateTimeKind.Unspecified), parsedInstance.ValueFrom);
-            Assert.AreEqual(new DateTime(2017, 06, 08, 18, 00, 00, DateTimeKind.Unspecified), parsedInstance.ValueTo);
+            Assert.AreEqual(new DateTime(2017, 06, 07, 17, 00, 00, DateTimeKind.Local), parsedInstance.ValueFrom);
+            Assert.AreEqual(new DateTime(2017, 06, 08, 18, 00, 00, DateTimeKind.Local), parsedInstance.ValueTo);
         }
     }
 }
